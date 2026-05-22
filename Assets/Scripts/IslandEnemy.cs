@@ -6,15 +6,18 @@ public sealed class IslandEnemy : MonoBehaviour
     [SerializeField] private float patrolRadius = 10f;
     [SerializeField] private float patrolSpeed = 2.2f;
     [SerializeField] private float chaseSpeed = 4.2f;
-    [SerializeField] private float detectionRange = 18f;
-    [SerializeField] private float attackRange = 1.8f;
+    [SerializeField] private float detectionRange = 32f;
+    [SerializeField] private float attackRange = 3.2f;
+    [SerializeField] private float attackInterval = 0.65f;
     [SerializeField] private int damage = 12;
 
     private CharacterController controller;
     private Transform player;
+    private IslandPlayerHealth playerHealth;
     private Vector3 homePosition;
     private Vector3 targetPosition;
     private float repickTime;
+    private float nextAttackTime;
     private float verticalVelocity;
     private Animator animator;
 
@@ -27,13 +30,18 @@ public sealed class IslandEnemy : MonoBehaviour
     private void Start()
     {
         homePosition = transform.position;
-        player = GameObject.FindWithTag("Player")?.transform;
+        FindPlayer();
         PickPatrolTarget();
     }
 
     private void Update()
     {
-        if (player == null)
+        if (player == null || playerHealth == null)
+        {
+            FindPlayer();
+        }
+
+        if (player == null || playerHealth == null)
         {
             return;
         }
@@ -47,9 +55,10 @@ public sealed class IslandEnemy : MonoBehaviour
 
         MoveToward(destination, speed);
 
-        if (chasing && toPlayer.magnitude <= attackRange)
+        if (chasing && toPlayer.magnitude <= attackRange && Time.time >= nextAttackTime)
         {
-            player.GetComponent<IslandPlayerHealth>()?.TakeDamage(damage);
+            nextAttackTime = Time.time + attackInterval;
+            playerHealth.TakeDamage(damage);
         }
 
         if (!chasing && (Time.time > repickTime || Vector3.Distance(transform.position, targetPosition) < 1.2f))
@@ -91,5 +100,19 @@ public sealed class IslandEnemy : MonoBehaviour
         Vector2 offset = Random.insideUnitCircle * patrolRadius;
         targetPosition = homePosition + new Vector3(offset.x, 0f, offset.y);
         repickTime = Time.time + Random.Range(3f, 7f);
+    }
+
+    private void FindPlayer()
+    {
+        playerHealth = FindObjectOfType<IslandPlayerHealth>();
+        if (playerHealth != null)
+        {
+            player = playerHealth.transform;
+            return;
+        }
+
+        GameObject taggedPlayer = GameObject.FindWithTag("Player");
+        player = taggedPlayer != null ? taggedPlayer.transform : null;
+        playerHealth = player != null ? player.GetComponent<IslandPlayerHealth>() : null;
     }
 }

@@ -7,6 +7,9 @@ public sealed class IslandPlayerHealth : MonoBehaviour
 
     private int currentHealth;
     private float nextDamageTime;
+    private Renderer[] renderers;
+    private Color[] originalColors;
+    private float flashUntil;
 
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
@@ -15,6 +18,32 @@ public sealed class IslandPlayerHealth : MonoBehaviour
     private void Awake()
     {
         currentHealth = maxHealth;
+        renderers = GetComponentsInChildren<Renderer>();
+        originalColors = new Color[renderers.Length];
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            originalColors[i] = renderers[i].material.color;
+        }
+    }
+
+    private void Update()
+    {
+        if (renderers == null)
+        {
+            return;
+        }
+
+        bool flashing = Time.time < flashUntil;
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] == null)
+            {
+                continue;
+            }
+
+            renderers[i].material.color = flashing ? Color.red : originalColors[i];
+        }
     }
 
     public void TakeDamage(int amount)
@@ -26,6 +55,7 @@ public sealed class IslandPlayerHealth : MonoBehaviour
 
         nextDamageTime = Time.time + damageCooldown;
         currentHealth = Mathf.Max(0, currentHealth - Mathf.Abs(amount));
+        flashUntil = Time.time + 0.18f;
         IslandGameManager.Instance?.PlayHitSound();
 
         if (currentHealth == 0)
