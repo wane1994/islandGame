@@ -14,6 +14,7 @@ public sealed class IslandGameManager : MonoBehaviour
     private AudioSource audioSource;
     private AudioClip crystalClip;
     private AudioClip hitClip;
+    private AudioClip shootClip;
     private AudioClip winClip;
     private Texture2D whiteTexture;
     private GUIStyle labelStyle;
@@ -30,6 +31,7 @@ public sealed class IslandGameManager : MonoBehaviour
         audioSource = gameObject.AddComponent<AudioSource>();
         crystalClip = CreateTone("Crystal", 880f, 0.12f, 0.22f);
         hitClip = CreateTone("Hit", 140f, 0.16f, 0.28f);
+        shootClip = CreateTone("Shoot", 360f, 0.08f, 0.18f);
         winClip = CreateTone("Win", 660f, 0.45f, 0.25f);
     }
 
@@ -84,6 +86,11 @@ public sealed class IslandGameManager : MonoBehaviour
         PlayClip(hitClip);
     }
 
+    public void PlayShootSound()
+    {
+        PlayClip(shootClip);
+    }
+
     private void OnGUI()
     {
         EnsureStyles();
@@ -98,7 +105,8 @@ public sealed class IslandGameManager : MonoBehaviour
             maxHealth = playerHealth.MaxHealth;
         }
 
-        GUI.Label(new Rect(20f, 18f, 620f, 40f), $"Health: {health}/{maxHealth}    Crystals: {collectedCrystals}/{totalCrystals}    Time: {elapsed:0.0}s", labelStyle);
+        int enemies = FindObjectsOfType<IslandEnemy>().Length;
+        GUI.Label(new Rect(20f, 18f, 760f, 40f), $"Health: {health}/{maxHealth}    Crystals: {collectedCrystals}/{totalCrystals}    Enemies: {enemies}    Time: {elapsed:0.0}s", labelStyle);
         DrawHealthBar(20f, 54f, 260f, 18f, health / (float)Mathf.Max(1, maxHealth));
         DrawMinimap();
 
@@ -116,7 +124,7 @@ public sealed class IslandGameManager : MonoBehaviour
         }
         else
         {
-            GUI.Label(new Rect(0f, 66f, Screen.width, 50f), "Collect all crystals, then reach the golden beacon.", messageStyle);
+            GUI.Label(new Rect(0f, 66f, Screen.width, 50f), "Collect all crystals, shoot sentries with the left mouse button, then reach the golden beacon.", messageStyle);
         }
     }
 

@@ -259,6 +259,7 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
         player.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Player);
         AddHumanoidAnimator(player);
         player.AddComponent<IslandPlayerController>();
+        player.AddComponent<IslandPlayerWeapon>();
         ConfigureCamera();
     }
 

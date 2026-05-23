@@ -10,6 +10,7 @@ public sealed class IslandEnemy : MonoBehaviour
     [SerializeField] private float attackRange = 3.2f;
     [SerializeField] private float attackInterval = 0.65f;
     [SerializeField] private int damage = 12;
+    [SerializeField] private int maxHealth = 100;
 
     private CharacterController controller;
     private Transform player;
@@ -20,11 +21,24 @@ public sealed class IslandEnemy : MonoBehaviour
     private float nextAttackTime;
     private float verticalVelocity;
     private Animator animator;
+    private Renderer[] renderers;
+    private Color[] originalColors;
+    private int currentHealth;
+    private float flashUntil;
+    private bool dead;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
+        currentHealth = maxHealth;
+        renderers = GetComponentsInChildren<Renderer>();
+        originalColors = new Color[renderers.Length];
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            originalColors[i] = renderers[i].material.color;
+        }
     }
 
     private void Start()
@@ -36,6 +50,13 @@ public sealed class IslandEnemy : MonoBehaviour
 
     private void Update()
     {
+        UpdateFlash();
+
+        if (dead)
+        {
+            return;
+        }
+
         if (player == null || playerHealth == null)
         {
             FindPlayer();
@@ -65,6 +86,48 @@ public sealed class IslandEnemy : MonoBehaviour
         {
             PickPatrolTarget();
         }
+    }
+
+    public void TakeDamage(int amount)
+    {
+        if (dead)
+        {
+            return;
+        }
+
+        currentHealth = Mathf.Max(0, currentHealth - Mathf.Abs(amount));
+        flashUntil = Time.time + 0.12f;
+        IslandGameManager.Instance?.PlayHitSound();
+
+        if (currentHealth == 0)
+        {
+            Die();
+        }
+    }
+
+    private void UpdateFlash()
+    {
+        if (renderers == null)
+        {
+            return;
+        }
+
+        bool flashing = Time.time < flashUntil;
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] == null)
+            {
+                continue;
+            }
+
+            renderers[i].material.color = flashing ? Color.yellow : originalColors[i];
+        }
+    }
+
+    private void Die()
+    {
+        dead = true;
+        Destroy(gameObject);
     }
 
     private void MoveToward(Vector3 destination, float speed)
