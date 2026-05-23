@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +10,7 @@ public sealed class IslandGameManager : MonoBehaviour
     private int collectedCrystals;
     private bool won;
     private bool lost;
+    [SerializeField] private float enemyRespawnDelay = 2.2f;
     private float startTime;
     private float finalTime;
     private AudioSource audioSource;
@@ -89,6 +91,30 @@ public sealed class IslandGameManager : MonoBehaviour
     public void PlayShootSound()
     {
         PlayClip(shootClip);
+    }
+
+    public void EnemyKilled()
+    {
+        if (IsRunning)
+        {
+            StartCoroutine(RespawnEnemyAfterDelay());
+        }
+    }
+
+    private IEnumerator RespawnEnemyAfterDelay()
+    {
+        yield return new WaitForSeconds(enemyRespawnDelay);
+
+        if (!IsRunning)
+        {
+            yield break;
+        }
+
+        IslandTerrainGenerator generator = FindObjectOfType<IslandTerrainGenerator>();
+        if (generator != null)
+        {
+            generator.SpawnEnemy();
+        }
     }
 
     private void OnGUI()

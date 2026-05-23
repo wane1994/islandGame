@@ -127,6 +127,7 @@ public sealed class IslandEnemy : MonoBehaviour
     private void Die()
     {
         dead = true;
+        IslandGameManager.Instance?.EnemyKilled();
         Destroy(gameObject);
     }
 

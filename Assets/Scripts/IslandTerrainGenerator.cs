@@ -490,31 +490,75 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
 
         for (int i = 0; i < enemyCount; i++)
         {
-            Vector3 position = RandomIslandPoint(38f, 96f);
-            if (position.y < waterLevel + 2.5f)
+            if (!TryCreateEnemy(parent))
             {
                 i--;
-                continue;
             }
-
-            var enemy = new GameObject("Island Sentry");
-            enemy.transform.SetParent(parent, false);
-            enemy.transform.localPosition = position + Vector3.up * 0.15f;
-            enemy.transform.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-
-            CreateEnemyVisual(enemy.transform);
-
-            var controller = enemy.AddComponent<CharacterController>();
-            controller.height = 2f;
-            controller.radius = 0.4f;
-            controller.center = new Vector3(0f, 1f, 0f);
-            controller.stepOffset = 0.35f;
-            controller.slopeLimit = 48f;
-
-            AddHumanoidAnimator(enemy);
-            enemy.AddComponent<IslandEnemy>();
-            enemy.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Enemy);
         }
+    }
+
+    public void SpawnEnemy()
+    {
+        Transform parent = FindGeneratedRoot();
+        if (parent == null)
+        {
+            parent = transform;
+        }
+
+        for (int i = 0; i < 12; i++)
+        {
+            if (TryCreateEnemy(parent))
+            {
+                return;
+            }
+        }
+    }
+
+    private bool TryCreateEnemy(Transform parent)
+    {
+        Vector3 position = RandomIslandPoint(38f, 96f);
+        if (position.y < waterLevel + 2.5f)
+        {
+            return false;
+        }
+
+        CreateEnemy(parent, position);
+        return true;
+    }
+
+    private void CreateEnemy(Transform parent, Vector3 position)
+    {
+        var enemy = new GameObject("Island Sentry");
+        enemy.transform.SetParent(parent, false);
+        enemy.transform.localPosition = position + Vector3.up * 0.15f;
+        enemy.transform.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+
+        CreateEnemyVisual(enemy.transform);
+
+        var controller = enemy.AddComponent<CharacterController>();
+        controller.height = 2f;
+        controller.radius = 0.4f;
+        controller.center = new Vector3(0f, 1f, 0f);
+        controller.stepOffset = 0.35f;
+        controller.slopeLimit = 48f;
+
+        AddHumanoidAnimator(enemy);
+        enemy.AddComponent<IslandEnemy>();
+        enemy.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Enemy);
+    }
+
+    private Transform FindGeneratedRoot()
+    {
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child.name == GeneratedRootName)
+            {
+                return child;
+            }
+        }
+
+        return null;
     }
 
     private void CreateRocks(Transform parent)
