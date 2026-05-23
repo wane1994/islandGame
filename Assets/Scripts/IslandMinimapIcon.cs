@@ -5,7 +5,9 @@ public enum IslandMinimapIconType
     Player,
     Crystal,
     Enemy,
-    Beacon
+    Beacon,
+    Palm,
+    Heal
 }
 
 public sealed class IslandMinimapIcon : MonoBehaviour

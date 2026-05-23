@@ -20,6 +20,7 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
     [SerializeField] private int palmCount = 26;
     [SerializeField] private int crystalCount = 12;
     [SerializeField] private int enemyCount = 5;
+    [SerializeField] private int healItemCount = 3;
 
     private const string GeneratedRootName = "Generated Island";
     private const string PlayerName = "Player";
@@ -115,6 +116,33 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
         CreateBeacon(root.transform);
         CreatePlayer(root.transform);
         CreateEnemies(root.transform);
+        CreateHealItems(root.transform);
+
+    }
+
+    private void CreateHealItems(Transform parent)
+    {
+        Random.InitState(seed + 99);
+        var healMaterial = CreateMaterial("Heal Material", new Color(1f, 0.4f, 0.8f), true);
+        for (int i = 0; i < healItemCount; i++)
+        {
+            Vector3 position = RandomIslandPoint(24f, 100f);
+            if (position.y < waterLevel + 2f)
+            {
+                i--;
+                continue;
+            }
+            var heal = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            heal.name = "HealItem";
+            heal.transform.SetParent(parent, false);
+            heal.transform.localPosition = position + Vector3.up * 1.2f;
+            heal.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+            heal.GetComponent<Renderer>().sharedMaterial = healMaterial;
+            var collider = heal.GetComponent<Collider>();
+            collider.isTrigger = true;
+            heal.AddComponent<IslandHealItem>();
+            heal.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Heal);
+        }
     }
 
     private void BuildHeights(TerrainData terrainData)
@@ -547,6 +575,9 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
                 leaf.transform.localScale = new Vector3(3.0f, 0.12f, 0.65f);
                 leaf.GetComponent<Renderer>().sharedMaterial = leafMaterial;
             }
+
+            // Lisää minimap-ikoni palmuun
+            palm.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Palm);
         }
     }
 
@@ -656,5 +687,5 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
                 DestroyImmediate(child.gameObject);
             }
         }
-    }
-}
+    } }
+

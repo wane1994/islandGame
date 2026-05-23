@@ -63,4 +63,12 @@ public sealed class IslandPlayerHealth : MonoBehaviour
             IslandGameManager.Instance?.Lose();
         }
     }
+
+    public void Heal(int amount)
+    {
+        if (!IsAlive || amount <= 0 || currentHealth >= maxHealth)
+            return;
+        currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        flashUntil = Time.time + 0.18f;
+    }
 }

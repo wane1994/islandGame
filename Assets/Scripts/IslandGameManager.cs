@@ -173,6 +173,8 @@ public sealed class IslandGameManager : MonoBehaviour
                 IslandMinimapIconType.Crystal => Color.cyan,
                 IslandMinimapIconType.Enemy => Color.red,
                 IslandMinimapIconType.Beacon => Color.yellow,
+                IslandMinimapIconType.Palm => new Color(0.13f, 0.55f, 0.13f), // vihreä puulle
+                IslandMinimapIconType.Heal => new Color(1f, 0.4f, 0.8f), // pinkki healille
                 _ => Color.gray
             };
 
