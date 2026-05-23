@@ -9,7 +9,7 @@ public sealed class IslandPlayerController : MonoBehaviour
     [SerializeField] private float gravity = -24f;
     [SerializeField] private float mouseSensitivity = 2.2f;
     [SerializeField] private Vector3 cameraOffset = new Vector3(0f, 3.1f, -6.5f);
-    [SerializeField] private Vector3 cameraLookOffset = new Vector3(0f, 1.25f, 0f);
+    [SerializeField] private Vector3 cameraLookOffset = new Vector3(0f, 1.45f, 8f);
 
     private CharacterController characterController;
     private Camera playerCamera;
@@ -64,8 +64,9 @@ public sealed class IslandPlayerController : MonoBehaviour
         }
 
         Quaternion cameraRotation = Quaternion.Euler(pitch, yaw, 0f);
+        Vector3 lookTarget = transform.position + Quaternion.Euler(0f, yaw, 0f) * cameraLookOffset;
         playerCamera.transform.position = transform.position + cameraRotation * cameraOffset;
-        playerCamera.transform.rotation = Quaternion.LookRotation((transform.position + cameraLookOffset) - playerCamera.transform.position, Vector3.up);
+        playerCamera.transform.rotation = Quaternion.LookRotation(lookTarget - playerCamera.transform.position, Vector3.up);
     }
 
     private void HandleLook()
