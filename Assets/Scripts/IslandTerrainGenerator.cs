@@ -106,7 +106,7 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
 
         var terrain = terrainObject.GetComponent<Terrain>();
         terrain.drawInstanced = false;
-        terrain.materialTemplate = CreateMaterial("Terrain Material", new Color(0.58f, 0.70f, 0.40f));
+        terrain.materialTemplate = LoadRuntimeMaterial("IslandTerrain");
 
         CreateWater(root.transform);
         CreateRocks(root.transform);
@@ -670,25 +670,52 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
 
     private Material CreateMaterial(string materialName, Color color, bool transparent = false)
     {
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+        Material sourceMaterial = LoadRuntimeMaterial(transparent ? "IslandTransparent" : "IslandOpaque");
+        if (sourceMaterial != null)
+        {
+            Material clonedMaterial = new Material(sourceMaterial)
+            {
+                name = materialName
+            };
+            ApplyMaterialColor(clonedMaterial, color);
+            return clonedMaterial;
+        }
+
+        Shader shader = transparent ? Shader.Find("Legacy Shaders/Transparent/Diffuse") : Shader.Find("Legacy Shaders/Diffuse");
+        if (shader == null)
+        {
+            shader = Shader.Find("Legacy Shaders/VertexLit");
+        }
+
         if (shader == null)
         {
             shader = Shader.Find("Standard");
         }
 
-        var material = new Material(shader)
+        if (shader == null)
         {
-            name = materialName,
-            color = color
+            shader = Shader.Find("Sprites/Default");
+        }
+
+        if (shader == null)
+        {
+            shader = Shader.Find("Universal Render Pipeline/Lit");
+        }
+
+        if (shader == null)
+        {
+            Debug.LogWarning($"Could not create material '{materialName}' because no runtime shader was available.");
+            return null;
+        }
+
+        Material material = new Material(shader)
+        {
+            name = materialName
         };
+        ApplyMaterialColor(material, color);
 
         if (transparent)
         {
-            if (material.HasProperty("_BaseColor"))
-            {
-                material.SetColor("_BaseColor", color);
-            }
-
             if (material.HasProperty("_Surface"))
             {
                 material.SetFloat("_Surface", 1f);
@@ -711,6 +738,24 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
         }
 
         return material;
+    }
+
+    private Material LoadRuntimeMaterial(string materialName)
+    {
+        return Resources.Load<Material>("RuntimeMaterials/" + materialName);
+    }
+
+    private void ApplyMaterialColor(Material material, Color color)
+    {
+        if (material.HasProperty("_BaseColor"))
+        {
+            material.SetColor("_BaseColor", color);
+        }
+
+        if (material.HasProperty("_Color"))
+        {
+            material.SetColor("_Color", color);
+        }
     }
 
     private void ClearGeneratedChildren()

@@ -212,25 +212,52 @@ public sealed class IslandPlayerWeapon : MonoBehaviour
 
     private static Material CreateMaterial(string materialName, Color color, bool transparent = false)
     {
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+        Material sourceMaterial = Resources.Load<Material>("RuntimeMaterials/" + (transparent ? "IslandTransparent" : "IslandOpaque"));
+        if (sourceMaterial != null)
+        {
+            Material clonedMaterial = new Material(sourceMaterial)
+            {
+                name = materialName
+            };
+            ApplyMaterialColor(clonedMaterial, color);
+            return clonedMaterial;
+        }
+
+        Shader shader = transparent ? Shader.Find("Legacy Shaders/Transparent/Diffuse") : Shader.Find("Legacy Shaders/Diffuse");
+        if (shader == null)
+        {
+            shader = Shader.Find("Legacy Shaders/VertexLit");
+        }
+
         if (shader == null)
         {
             shader = Shader.Find("Standard");
         }
 
-        var material = new Material(shader)
+        if (shader == null)
         {
-            name = materialName,
-            color = color
+            shader = Shader.Find("Sprites/Default");
+        }
+
+        if (shader == null)
+        {
+            shader = Shader.Find("Universal Render Pipeline/Lit");
+        }
+
+        if (shader == null)
+        {
+            Debug.LogWarning($"Could not create material '{materialName}' because no runtime shader was available.");
+            return null;
+        }
+
+        Material material = new Material(shader)
+        {
+            name = materialName
         };
+        ApplyMaterialColor(material, color);
 
         if (transparent)
         {
-            if (material.HasProperty("_BaseColor"))
-            {
-                material.SetColor("_BaseColor", color);
-            }
-
             if (material.HasProperty("_Surface"))
             {
                 material.SetFloat("_Surface", 1f);
@@ -248,5 +275,18 @@ public sealed class IslandPlayerWeapon : MonoBehaviour
         }
 
         return material;
+    }
+
+    private static void ApplyMaterialColor(Material material, Color color)
+    {
+        if (material.HasProperty("_BaseColor"))
+        {
+            material.SetColor("_BaseColor", color);
+        }
+
+        if (material.HasProperty("_Color"))
+        {
+            material.SetColor("_Color", color);
+        }
     }
 }
