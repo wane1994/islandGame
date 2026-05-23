@@ -109,6 +109,7 @@ public sealed class IslandGameManager : MonoBehaviour
         GUI.Label(new Rect(20f, 18f, 760f, 40f), $"Health: {health}/{maxHealth}    Crystals: {collectedCrystals}/{totalCrystals}    Enemies: {enemies}    Time: {elapsed:0.0}s", labelStyle);
         DrawHealthBar(20f, 54f, 260f, 18f, health / (float)Mathf.Max(1, maxHealth));
         DrawMinimap();
+        DrawCrosshair();
 
         if (won)
         {
@@ -126,6 +127,30 @@ public sealed class IslandGameManager : MonoBehaviour
         {
             GUI.Label(new Rect(0f, 66f, Screen.width, 50f), "Collect all crystals, shoot sentries with the left mouse button, then reach the golden beacon.", messageStyle);
         }
+    }
+
+    private void DrawCrosshair()
+    {
+        if (!IsRunning)
+        {
+            return;
+        }
+
+        float centerX = Screen.width * 0.5f;
+        float centerY = Screen.height * 0.5f;
+        Color crosshairColor = new Color(1f, 0.92f, 0.24f, 0.92f);
+        Color shadowColor = new Color(0f, 0f, 0f, 0.55f);
+
+        DrawRect(new Rect(centerX - 14f, centerY - 1f, 9f, 2f), shadowColor);
+        DrawRect(new Rect(centerX + 5f, centerY - 1f, 9f, 2f), shadowColor);
+        DrawRect(new Rect(centerX - 1f, centerY - 14f, 2f, 9f), shadowColor);
+        DrawRect(new Rect(centerX - 1f, centerY + 5f, 2f, 9f), shadowColor);
+
+        DrawRect(new Rect(centerX - 13f, centerY - 1f, 8f, 2f), crosshairColor);
+        DrawRect(new Rect(centerX + 5f, centerY - 1f, 8f, 2f), crosshairColor);
+        DrawRect(new Rect(centerX - 1f, centerY - 13f, 2f, 8f), crosshairColor);
+        DrawRect(new Rect(centerX - 1f, centerY + 5f, 2f, 8f), crosshairColor);
+        DrawRect(new Rect(centerX - 2f, centerY - 2f, 4f, 4f), crosshairColor);
     }
 
     private void EnsureStyles()
