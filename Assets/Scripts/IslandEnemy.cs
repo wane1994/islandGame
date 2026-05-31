@@ -128,7 +128,8 @@ public sealed class IslandEnemy : MonoBehaviour
     private void Die()
     {
         dead = true;
-        IslandGameManager.Instance?.EnemyKilled();
+        bool isMegaEnemy = GetComponent<IslandMegaEnemy>() != null;
+        IslandGameManager.Instance?.EnemyKilled(isMegaEnemy);
         FindObjectOfType<IslandTerrainGenerator>().SpawnHealItem(transform.position);
         Debug.Log("Enemy died, dropping heal items.");
         Destroy(gameObject);

@@ -125,31 +125,10 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
         Random.InitState(seed + 123);
         for (int i = 0; i < megaEnemyCount; i++)
         {
-            Vector3 position = RandomIslandPoint(60f, 110f);
-            if (position.y < waterLevel + 2.5f)
+            if (!TryCreateMegaEnemy(parent))
             {
                 i--;
-                continue;
             }
-            var mega = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            mega.name = "MegaEnemy";
-            mega.transform.SetParent(parent, false);
-            mega.transform.localPosition = position + Vector3.up * 1.0f;
-            mega.transform.localScale = new Vector3(2.2f, 4.5f, 2.2f);
-            mega.GetComponent<Renderer>().sharedMaterial = CreateMaterial("MegaEnemy Material", new Color(0.5f, 0.1f, 0.7f));
-            var collider = mega.GetComponent<Collider>();
-            collider.isTrigger = false;
-            var cc = mega.AddComponent<CharacterController>();
-            cc.height = 4.5f;
-            cc.radius = 1.1f;
-            cc.center = new Vector3(0f, 2.25f, 0f);
-            var enemy = mega.AddComponent<IslandEnemy>();
-            enemy.maxHealth = 40000;
-            enemy.patrolSpeed = 10f;
-            enemy.chaseSpeed = 1000f;
-            enemy.damage = 30;
-            mega.AddComponent<IslandMegaEnemy>();
-            mega.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Enemy);
         }
     }
 
@@ -555,6 +534,23 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
         }
     }
 
+    public void SpawnMegaEnemy()
+    {
+        Transform parent = FindGeneratedRoot();
+        if (parent == null)
+        {
+            parent = transform;
+        }
+
+        for (int i = 0; i < 12; i++)
+        {
+            if (TryCreateMegaEnemy(parent))
+            {
+                return;
+            }
+        }
+    }
+
     private bool TryCreateEnemy(Transform parent)
     {
         Vector3 position = RandomIslandPoint(38f, 96f);
@@ -564,6 +560,18 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
         }
 
         CreateEnemy(parent, position);
+        return true;
+    }
+
+    private bool TryCreateMegaEnemy(Transform parent)
+    {
+        Vector3 position = RandomIslandPoint(60f, 110f);
+        if (position.y < waterLevel + 2.5f)
+        {
+            return false;
+        }
+
+        CreateMegaEnemy(parent, position);
         return true;
     }
 
@@ -586,6 +594,33 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
         AddHumanoidAnimator(enemy);
         enemy.AddComponent<IslandEnemy>();
         enemy.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Enemy);
+    }
+
+    private void CreateMegaEnemy(Transform parent, Vector3 position)
+    {
+        var mega = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        mega.name = "MegaEnemy";
+        mega.transform.SetParent(parent, false);
+        mega.transform.localPosition = position + Vector3.up * 1.0f;
+        mega.transform.localScale = new Vector3(2.2f, 4.5f, 2.2f);
+        mega.GetComponent<Renderer>().sharedMaterial = CreateMaterial("MegaEnemy Material", new Color(0.5f, 0.1f, 0.7f));
+
+        var collider = mega.GetComponent<Collider>();
+        collider.isTrigger = false;
+
+        var controller = mega.AddComponent<CharacterController>();
+        controller.height = 4.5f;
+        controller.radius = 1.1f;
+        controller.center = new Vector3(0f, 2.25f, 0f);
+
+        var enemy = mega.AddComponent<IslandEnemy>();
+        enemy.maxHealth = 40000;
+        enemy.patrolSpeed = 10f;
+        enemy.chaseSpeed = 1000f;
+        enemy.damage = 30;
+
+        mega.AddComponent<IslandMegaEnemy>();
+        mega.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Enemy);
     }
 
     private Transform FindGeneratedRoot()

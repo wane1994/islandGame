@@ -93,15 +93,15 @@ public sealed class IslandGameManager : MonoBehaviour
         PlayClip(shootClip);
     }
 
-    public void EnemyKilled()
+    public void EnemyKilled(bool isMegaEnemy = false)
     {
         if (IsRunning)
         {
-            StartCoroutine(RespawnEnemyAfterDelay());
+            StartCoroutine(RespawnEnemyAfterDelay(isMegaEnemy));
         }
     }
 
-    private IEnumerator RespawnEnemyAfterDelay()
+    private IEnumerator RespawnEnemyAfterDelay(bool isMegaEnemy)
     {
         yield return new WaitForSeconds(enemyRespawnDelay);
 
@@ -113,7 +113,14 @@ public sealed class IslandGameManager : MonoBehaviour
         IslandTerrainGenerator generator = FindObjectOfType<IslandTerrainGenerator>();
         if (generator != null)
         {
-            generator.SpawnEnemy();
+            if (isMegaEnemy)
+            {
+                generator.SpawnMegaEnemy();
+            }
+            else
+            {
+                generator.SpawnEnemy();
+            }
         }
     }
 
