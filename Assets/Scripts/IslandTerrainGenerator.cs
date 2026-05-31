@@ -21,6 +21,7 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
     [SerializeField] private int crystalCount = 12;
     [SerializeField] private int enemyCount = 5;
     [SerializeField] private int healItemCount = 3;
+    [SerializeField] private int megaEnemyCount = 1;
 
     private const string GeneratedRootName = "Generated Island";
     private const string PlayerName = "Player";
@@ -117,11 +118,60 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
         CreatePlayer(root.transform);
         CreateEnemies(root.transform);
         CreateHealItems(root.transform);
-
+        CreateMegaEnemies(root.transform);
+    }
+    private void CreateMegaEnemies(Transform parent)
+    {
+        Random.InitState(seed + 123);
+        for (int i = 0; i < megaEnemyCount; i++)
+        {
+            Vector3 position = RandomIslandPoint(60f, 110f);
+            if (position.y < waterLevel + 2.5f)
+            {
+                i--;
+                continue;
+            }
+            var mega = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            mega.name = "MegaEnemy";
+            mega.transform.SetParent(parent, false);
+            mega.transform.localPosition = position + Vector3.up * 1.0f;
+            mega.transform.localScale = new Vector3(2.2f, 4.5f, 2.2f);
+            mega.GetComponent<Renderer>().sharedMaterial = CreateMaterial("MegaEnemy Material", new Color(0.5f, 0.1f, 0.7f));
+            var collider = mega.GetComponent<Collider>();
+            collider.isTrigger = false;
+            var cc = mega.AddComponent<CharacterController>();
+            cc.height = 4.5f;
+            cc.radius = 1.1f;
+            cc.center = new Vector3(0f, 2.25f, 0f);
+            var enemy = mega.AddComponent<IslandEnemy>();
+            enemy.maxHealth = 40000;
+            enemy.patrolSpeed = 10f;
+            enemy.chaseSpeed = 1000f;
+            enemy.damage = 30;
+            mega.AddComponent<IslandMegaEnemy>();
+            mega.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Enemy);
+        }
     }
 
-    private void CreateHealItems(Transform parent)
+    public void SpawnHealItem(Vector3 position)
     {
+        var heal = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        heal.name = "HealItem";
+        var parent = FindGeneratedRoot();
+        heal.transform.SetParent(parent, false);
+        var healMaterial = CreateMaterial("Heal Material", new Color(1f, 0.4f, 0.8f), true);
+        heal.transform.localPosition = position + Vector3.up * 1.2f;
+        heal.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+        heal.GetComponent<Renderer>().sharedMaterial = healMaterial;
+        var collider = heal.GetComponent<Collider>();
+        collider.isTrigger = true;
+        heal.AddComponent<IslandHealItem>();
+        heal.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Heal);
+    }
+
+    public void CreateHealItems(Transform parent)
+    {
+        Debug.Log("Creating heal items...");
         Random.InitState(seed + 99);
         var healMaterial = CreateMaterial("Heal Material", new Color(1f, 0.4f, 0.8f), true);
         for (int i = 0; i < healItemCount; i++)
@@ -132,16 +182,7 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
                 i--;
                 continue;
             }
-            var heal = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            heal.name = "HealItem";
-            heal.transform.SetParent(parent, false);
-            heal.transform.localPosition = position + Vector3.up * 1.2f;
-            heal.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
-            heal.GetComponent<Renderer>().sharedMaterial = healMaterial;
-            var collider = heal.GetComponent<Collider>();
-            collider.isTrigger = true;
-            heal.AddComponent<IslandHealItem>();
-            heal.AddComponent<IslandMinimapIcon>().Configure(IslandMinimapIconType.Heal);
+            SpawnHealItem(position);
         }
     }
 
@@ -777,5 +818,6 @@ public sealed class IslandTerrainGenerator : MonoBehaviour
                 DestroyImmediate(child.gameObject);
             }
         }
-    } }
+    }
+}
 

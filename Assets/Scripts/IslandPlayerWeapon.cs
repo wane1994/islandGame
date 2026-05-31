@@ -3,7 +3,7 @@ using UnityEngine;
 
 public sealed class IslandPlayerWeapon : MonoBehaviour
 {
-    [SerializeField] private int damage = 100;
+    [SerializeField] private int damage = 10;
     [SerializeField] private float range = 58f;
     [SerializeField] private float fireInterval = 0.28f;
     [SerializeField] private float bulletSpeed = 52f;

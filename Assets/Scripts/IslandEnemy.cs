@@ -4,13 +4,13 @@ using UnityEngine;
 public sealed class IslandEnemy : MonoBehaviour
 {
     [SerializeField] private float patrolRadius = 10f;
-    [SerializeField] private float patrolSpeed = 2.2f;
-    [SerializeField] private float chaseSpeed = 4.2f;
+    [SerializeField] public float patrolSpeed = 2.2f;
+    [SerializeField] public float chaseSpeed = 4.2f;
     [SerializeField] private float detectionRange = 32f;
     [SerializeField] private float attackRange = 3.2f;
     [SerializeField] private float attackInterval = 0.65f;
-    [SerializeField] private int damage = 12;
-    [SerializeField] private int maxHealth = 100;
+    [SerializeField] public int damage = 12;
+    [SerializeField] public int maxHealth = 100;
 
     private CharacterController controller;
     private Transform player;
@@ -55,6 +55,7 @@ public sealed class IslandEnemy : MonoBehaviour
         if (dead)
         {
             return;
+
         }
 
         if (player == null || playerHealth == null)
@@ -128,6 +129,8 @@ public sealed class IslandEnemy : MonoBehaviour
     {
         dead = true;
         IslandGameManager.Instance?.EnemyKilled();
+        FindObjectOfType<IslandTerrainGenerator>().SpawnHealItem(transform.position);
+        Debug.Log("Enemy died, dropping heal items.");
         Destroy(gameObject);
     }
 
